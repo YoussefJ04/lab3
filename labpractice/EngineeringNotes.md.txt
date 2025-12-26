@@ -1,0 +1,11 @@
+Dans ce lab, nous avons comparé les performances de Spark selon le format de données, le partitionnement et la stratégie de jointure.
+
+Le format CSV est un format texte non compressé. Il nécessite un parsing ligne par ligne et ne permet pas le column pruning. Cela entraîne plus d’I/O disque et un coût CPU plus élevé, surtout pour les requêtes analytiques. À l’inverse, Parquet est un format colonne compressé. Il permet à Spark de ne lire que les colonnes nécessaires et de réduire fortement le volume de données lues, ce qui améliore les performances globales.
+
+Le partitionnement, par exemple par année et mois, permet de limiter les données scannées lorsque les requêtes filtrent sur ces colonnes. Spark peut ignorer les partitions non pertinentes, réduisant ainsi le nombre de fichiers lus et le temps de lecture. Un partitionnement excessif peut toutefois créer trop de petits fichiers et dégrader les performances.
+
+Les opérations de groupBy et orderBy déclenchent des shuffles, qui sont coûteux car ils impliquent des échanges réseau et des écritures disque. L’utilisation de Parquet et d’une projection minimale réduit la taille des données échangées lors du shuffle.
+
+Le broadcast join permet d’éviter le shuffle en envoyant une petite table à tous les executors. Cette stratégie est très efficace lorsque l’une des tables est suffisamment petite, mais elle peut entraîner des problèmes de mémoire si la table diffusée est trop grande.
+
+En conclusion, Parquet est préférable à CSV pour les workloads analytiques, le partitionnement doit être utilisé de manière réfléchie, et le broadcast join est un bon choix uniquement pour des tables de petite taille.

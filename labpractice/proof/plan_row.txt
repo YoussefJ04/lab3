@@ -1,0 +1,66 @@
+== Physical Plan ==
+AdaptiveSparkPlan (11)
++- TakeOrderedAndProject (10)
+   +- HashAggregate (9)
+      +- Exchange (8)
+         +- HashAggregate (7)
+            +- Project (6)
+               +- Filter (5)
+                  +- InMemoryTableScan (1)
+                        +- InMemoryRelation (2)
+                              +- * Project (4)
+                                 +- Scan csv  (3)
+
+
+(1) InMemoryTableScan
+Output [6]: [curr_title#1, month#7, n#3, prev_title#0, type#2, year#6]
+Arguments: [curr_title#1, month#7, n#3, prev_title#0, type#2, year#6], [isnotnull(type#2), (type#2 = link)]
+
+(2) InMemoryRelation
+Arguments: [prev_title#0, curr_title#1, type#2, n#3, ts#4, year#6, month#7], StorageLevel(disk, memory, deserialized, 1 replicas)
+
+(3) Scan csv 
+Output [5]: [prev_title#0, curr_title#1, type#2, n#3, ts#4]
+Batched: false
+Location: InMemoryFileIndex [file:/D:/DataEngineering/lab3/labpractice/data/lab3_clicks_2025-05.csv, ... 2 entries]
+ReadSchema: struct<prev_title:string,curr_title:string,type:string,n:int,ts:timestamp>
+
+(4) Project [codegen id : 1]
+Output [7]: [prev_title#0, curr_title#1, type#2, n#3, ts#4, year(cast(ts#4 as date)) AS year#6, month(cast(ts#4 as date)) AS month#7]
+Input [5]: [prev_title#0, curr_title#1, type#2, n#3, ts#4]
+
+(5) Filter
+Input [6]: [curr_title#1, month#7, n#3, prev_title#0, type#2, year#6]
+Condition : (isnotnull(type#2) AND (type#2 = link))
+
+(6) Project
+Output [5]: [prev_title#0, curr_title#1, n#3, year#6, month#7]
+Input [6]: [curr_title#1, month#7, n#3, prev_title#0, type#2, year#6]
+
+(7) HashAggregate
+Input [5]: [prev_title#0, curr_title#1, n#3, year#6, month#7]
+Keys [4]: [year#6, month#7, prev_title#0, curr_title#1]
+Functions [1]: [partial_sum(n#3)]
+Aggregate Attributes [1]: [sum#510L]
+Results [5]: [year#6, month#7, prev_title#0, curr_title#1, sum#511L]
+
+(8) Exchange
+Input [5]: [year#6, month#7, prev_title#0, curr_title#1, sum#511L]
+Arguments: hashpartitioning(year#6, month#7, prev_title#0, curr_title#1, 200), ENSURE_REQUIREMENTS, [plan_id=85]
+
+(9) HashAggregate
+Input [5]: [year#6, month#7, prev_title#0, curr_title#1, sum#511L]
+Keys [4]: [year#6, month#7, prev_title#0, curr_title#1]
+Functions [1]: [sum(n#3)]
+Aggregate Attributes [1]: [sum(n#3)#404L]
+Results [5]: [year#6, month#7, prev_title#0, curr_title#1, sum(n#3)#404L AS n#396L]
+
+(10) TakeOrderedAndProject
+Input [5]: [year#6, month#7, prev_title#0, curr_title#1, n#396L]
+Arguments: 50, [n#396L DESC NULLS LAST], [year#6, month#7, prev_title#0, curr_title#1, n#396L]
+
+(11) AdaptiveSparkPlan
+Output [5]: [year#6, month#7, prev_title#0, curr_title#1, n#396L]
+Arguments: isFinalPlan=false
+
+

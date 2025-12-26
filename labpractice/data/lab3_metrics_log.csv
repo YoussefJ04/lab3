@@ -1,0 +1,10 @@
+run_id,query,representation,files_read,input_size_bytes,shuffle_read_bytes,shuffle_write_bytes,notes,timestamp
+r1,Q1,row,,,,,,
+r1,Q1,column,,,,,,
+r1,Q2,row,3,18500,26500,26500
+r1,Q2,column,1,312,1038,519
+r1,Q3,row,,,,,,
+r1,Q3,column,,,,,,
+r1,Join,normal,3,18500,26500,26500
+r1,Join,broadcast,1,1200,0,0
+

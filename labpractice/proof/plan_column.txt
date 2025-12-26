@@ -1,0 +1,65 @@
+== Physical Plan ==
+AdaptiveSparkPlan (11)
++- TakeOrderedAndProject (10)
+   +- HashAggregate (9)
+      +- Exchange (8)
+         +- HashAggregate (7)
+            +- Project (6)
+               +- Filter (5)
+                  +- InMemoryTableScan (1)
+                        +- InMemoryRelation (2)
+                              +- * ColumnarToRow (4)
+                                 +- Scan parquet  (3)
+
+
+(1) InMemoryTableScan
+Output [6]: [curr_title#653, month#658, n#655, prev_title#652, type#654, year#657]
+Arguments: [curr_title#653, month#658, n#655, prev_title#652, type#654, year#657], [isnotnull(type#654), (type#654 = link)]
+
+(2) InMemoryRelation
+Arguments: [prev_title#652, curr_title#653, type#654, n#655, ts#656, year#657, month#658], StorageLevel(disk, memory, deserialized, 1 replicas)
+
+(3) Scan parquet 
+Output [7]: [prev_title#652, curr_title#653, type#654, n#655, ts#656, year#657, month#658]
+Batched: true
+Location: InMemoryFileIndex [file:/D:/DataEngineering/lab3/labpractice/outputs/lab3/columnar/clicks_parquet]
+ReadSchema: struct<prev_title:string,curr_title:string,type:string,n:int,ts:timestamp>
+
+(4) ColumnarToRow [codegen id : 1]
+Input [7]: [prev_title#652, curr_title#653, type#654, n#655, ts#656, year#657, month#658]
+
+(5) Filter
+Input [6]: [curr_title#653, month#658, n#655, prev_title#652, type#654, year#657]
+Condition : (isnotnull(type#654) AND (type#654 = link))
+
+(6) Project
+Output [5]: [prev_title#652, curr_title#653, n#655, year#657, month#658]
+Input [6]: [curr_title#653, month#658, n#655, prev_title#652, type#654, year#657]
+
+(7) HashAggregate
+Input [5]: [prev_title#652, curr_title#653, n#655, year#657, month#658]
+Keys [4]: [year#657, month#658, prev_title#652, curr_title#653]
+Functions [1]: [partial_sum(n#655)]
+Aggregate Attributes [1]: [sum#995L]
+Results [5]: [year#657, month#658, prev_title#652, curr_title#653, sum#996L]
+
+(8) Exchange
+Input [5]: [year#657, month#658, prev_title#652, curr_title#653, sum#996L]
+Arguments: hashpartitioning(year#657, month#658, prev_title#652, curr_title#653, 200), ENSURE_REQUIREMENTS, [plan_id=181]
+
+(9) HashAggregate
+Input [5]: [year#657, month#658, prev_title#652, curr_title#653, sum#996L]
+Keys [4]: [year#657, month#658, prev_title#652, curr_title#653]
+Functions [1]: [sum(n#655)]
+Aggregate Attributes [1]: [sum(n#655)#889L]
+Results [5]: [year#657, month#658, prev_title#652, curr_title#653, sum(n#655)#889L AS n#881L]
+
+(10) TakeOrderedAndProject
+Input [5]: [year#657, month#658, prev_title#652, curr_title#653, n#881L]
+Arguments: 50, [n#881L DESC NULLS LAST], [year#657, month#658, prev_title#652, curr_title#653, n#881L]
+
+(11) AdaptiveSparkPlan
+Output [5]: [year#657, month#658, prev_title#652, curr_title#653, n#881L]
+Arguments: isFinalPlan=false
+
+
